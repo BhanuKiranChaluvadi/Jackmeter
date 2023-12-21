@@ -1,0 +1,54 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "scripts/build.sh",
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "start",
+            "type": "shell",
+            "command": "scripts/start_audio.sh",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": [
+                {
+                    "pattern": [
+                        {
+                            "regexp": ".",
+                            "file": 1,
+                            "line": 1,
+                            "column": 1,
+                            "message": 1
+                        }
+                    ],
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": {
+                            "regexp": "."
+                        },
+                        "endsPattern": {
+                            "regexp": "."
+                        }
+                    },
+                }
+            ]
+        },
+        {
+            "label": "stop",
+            "type": "shell",
+            "command": "scripts/stop_audio.sh",
+            "presentation": {
+                "reveal": "silent"
+            }
+        }
+    ]
+}

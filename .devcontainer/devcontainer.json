@@ -1,0 +1,24 @@
+{
+    "name": "jackmeter",
+
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+
+    "runArgs": [
+        "--shm-size=2G",
+        "--ulimit",
+        "memlock=50000000",
+        "--privileged=true"
+    ],
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools",
+                "xaver.clang-format",
+                "twxs.cmake"
+            ]
+        }
+    }
+}
