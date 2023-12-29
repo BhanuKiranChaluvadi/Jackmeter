@@ -5,6 +5,7 @@
 #include <string_view>
 #include <set>
 #include <vector>
+#include <memory>
 
 #include <jack/jack.h>
 
@@ -19,6 +20,8 @@ public:
     virtual ~JackClient();
 
     void Activate();
+    #include <memory>
+
     void Deactivate();
 
     void Connect();
@@ -28,12 +31,12 @@ public:
     using PortSet = std::set<std::string, NaturalStringLess>;
     PortSet GetOutPorts(const std::vector<std::string>& filter, bool all);
 
-private:
-    std::string m_clientName;
-    using Link = std::pair<jack_port_t*, jack_port_t*>;
-    using ProcessingPair = std::pair<Link, std::shared_ptr<IProcessor>>;
-    using ProcessingPairs = std::vector<ProcessingPair>;
-    ProcessingPairs m_pairs;
+    private:
+        std::string m_clientName;
+        using Link = std::pair<jack_port_t*, jack_port_t*>;
+        using ProcessingPair = std::pair<Link, std::shared_ptr<IProcessor>>;
+        using ProcessingPairs = std::vector<ProcessingPair>;
+        ProcessingPairs m_pairs;
 
     void NaturalSort(std::vector<std::string>& data);
 
