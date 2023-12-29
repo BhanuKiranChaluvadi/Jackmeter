@@ -69,7 +69,7 @@ void JackClient::Connect()
         auto srcPort = pair.first.first;
         auto sinkPort = pair.first.second;
         if (jack_connect(m_client, jack_port_name(srcPort), jack_port_name(sinkPort))) {
-             fmt::print("Can't connect ports {} -> {}\n", jack_port_name(srcPort), jack_port_name(sinkPort));
+            fmt::print("Can't connect ports {} -> {}\n", jack_port_name(srcPort), jack_port_name(sinkPort));
         }
     }
 }
@@ -89,31 +89,26 @@ void JackClient::AddProbe(std::string_view peer, std::shared_ptr<IProcessor> pro
 JackClient::PortSet JackClient::GetOutPorts(const std::vector<std::string>& filter, bool connectedOnly)
 {
     PortSet result;
-    auto try_insert = [this, &result, connectedOnly](auto ports)
-    {
-        for (unsigned i = 0; ports && ports[i]; ++i)
-        {
-            if (connectedOnly)
-            {
+    auto try_insert = [this, &result, connectedOnly](auto ports) {
+        for (unsigned i = 0; ports && ports[i]; ++i) {
+            if (connectedOnly) {
                 auto portObj = jack_port_by_name(m_client, ports[i]);
-                if (!portObj) continue;
+                if (!portObj)
+                    continue;
                 auto connections = jack_port_get_all_connections(m_client, portObj);
-                if (!connections) continue;
+                if (!connections)
+                    continue;
                 jack_free(connections);
             }
             result.insert(ports[i]);
         }
         jack_free(ports);
     };
-    if (filter.empty())
-    {
+    if (filter.empty()) {
         auto ports = jack_get_ports(m_client, NULL, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput);
         try_insert(ports);
-    }
-    else
-    {
-        for (const auto& pattern : filter)
-        {
+    } else {
+        for (const auto& pattern : filter) {
             auto ports = jack_get_ports(m_client, pattern.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput);
             try_insert(ports);
         }
