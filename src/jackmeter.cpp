@@ -1,16 +1,16 @@
-#include <getopt.h>
-#include <math.h>
-#include <poll.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <filesystem>
 #include <fstream>
+#include <getopt.h>
 #include <iostream>
 #include <iterator>
 #include <list>
+#include <math.h>
+#include <poll.h>
 #include <regex>
+#include <signal.h>
+#include <sys/types.h>
 #include <thread>
+#include <unistd.h>
 #include <vector>
 
 #include <fmt/format.h>
@@ -44,7 +44,7 @@ OPTIONS
 <port>  the port(s) to monitor, partial matching and with regex support
         if no ports are given, displays all ports
 )",
-    Usage);
+        Usage);
 
     return 0;
 }
@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
     std::vector<std::string> filter;
     for (; argc > optind; optind++)
         filter.emplace_back(std::string(argv[optind]));
-    auto addPorts = [](auto &ports){
+    auto addPorts = [](auto& ports) {
         for (auto& portToListenTo : ports) {
             auto processor = std::make_shared<jackmeter::SimplePeakProcessor>(portToListenTo);
             processors.push_back(processor);
@@ -162,6 +162,7 @@ int main(int argc, char* argv[])
     auto start = std::chrono::steady_clock::now();
     auto stop = start + std::chrono::seconds(duration);
     int measurement = 0;
+    const int DB_SHIFT = 60;
     while (!stdin_available() && (std::chrono::steady_clock::now() < stop || duration == 0) && (++measurement <= max_count || max_count == 0)) {
         if (plain_output) {
             log_status_plain();
@@ -171,7 +172,17 @@ int main(int argc, char* argv[])
             wmove(window, 0, 0);
             wrefresh(window);
             for (auto itr = processors.begin(); itr != processors.end(); ++itr) {
-                wprintw(window, "%s : %6.1f db  (min:%6.1f, max:%6.1f)\n", std::string((*itr)->GetName()).c_str(), (*itr)->GetLatestPeakDb(), (*itr)->GetMinPeakDb(), (*itr)->GetMaxPeakDb());
+
+                double latestPeakDb = (*itr)->GetLatestPeakDb();
+
+                // Convert dB to a scale of 0 to 100
+                int barLength = static_cast<int>((latestPeakDb + DB_SHIFT) * 100 / DB_SHIFT);
+                if (barLength < 0)
+                    barLength = 0;
+                // Generate the bar string
+                std::string bar(barLength, '|');
+
+                wprintw(window, "%s (Min: %.1f, Max: %.1f, Latest: %.1f) : %s\n", std::string((*itr)->GetName()).c_str(), (*itr)->GetMinPeakDb(), (*itr)->GetMaxPeakDb(), (*itr)->GetLatestPeakDb(), bar.c_str());
             }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds { static_cast<uint32_t>(1000 / rate) });
