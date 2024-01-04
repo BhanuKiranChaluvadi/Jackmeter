@@ -27,15 +27,19 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(JACK REQUIRED jack)
 find_package(fmt REQUIRED)
 find_package(Curses REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFTW REQUIRED fftw3)
 
 add_executable(${PROJECT_NAME} 
   src/jackmeter.cpp
   src/JackClient.cpp
-  src/SimplePeakProcessor.cpp)
+  src/SimplePeakProcessor.cpp
+  src/SimpleFrequencyProcessor.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE 
-  include)
+  include
+  ${FFTW_INCLUDE_DIRS})
 
-target_link_libraries(${PROJECT_NAME} ${JACK_LIBRARIES} fmt::fmt ${CURSES_LIBRARY})
+target_link_libraries(${PROJECT_NAME} ${JACK_LIBRARIES} fmt::fmt ${CURSES_LIBRARY} ${FFTW_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
