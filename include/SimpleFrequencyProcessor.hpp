@@ -11,7 +11,7 @@ public:
     explicit SimpleFrequencyProcessor(std::string_view name);
     virtual ~SimpleFrequencyProcessor() = default;
 
-    virtual void Process(float* samples, uint32_t nSamples) final;
+    virtual void Process(float* samples, uint32_t nSamples, uint32_t sampleRate) final;
 
     bool SignalDetected() const;
 
@@ -29,8 +29,8 @@ public:
 private:
     std::string m_name;
     std::atomic_bool m_signalDetected = false;
-    std::atomic<float> m_latestPeak = 0.0;
-    std::atomic<float> m_minPeak = 0.0;
-    std::atomic<float> m_maxPeak = 0.0;
+    std::atomic<float> m_latestFrequency = 0.0;
+    std::atomic<float> m_minFrequency = 0.0;
+    std::atomic<float> m_maxFrequency = 0.0;
 };
 } // namespace jackmeter

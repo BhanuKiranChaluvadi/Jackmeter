@@ -6,11 +6,11 @@
 namespace jackmeter {
 SimpleFrequencyProcessor::SimpleFrequencyProcessor(std::string_view name)
     : m_name(std::string(name))
-    , m_latestPeak(0.0f)
+    , m_latestFrequency(0.0f)
 {
 }
 
-void SimpleFrequencyProcessor::Process(float* samples, uint32_t nSamples)
+void SimpleFrequencyProcessor::Process(float* samples, uint32_t nSamples, uint32_t sampleRate)
 {
     // Perform Fourier transform
     fftw_complex* out = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * nSamples);
@@ -18,7 +18,7 @@ void SimpleFrequencyProcessor::Process(float* samples, uint32_t nSamples)
     fftw_execute(p);
 
     // Find frequency with highest magnitude
-    /*
+    
     double maxMagnitude = 0.0;
     double maxFrequency = 0.0;
     for (uint32_t i = 0; i < nSamples / 2 + 1; i++) {
@@ -37,7 +37,7 @@ void SimpleFrequencyProcessor::Process(float* samples, uint32_t nSamples)
     if (maxFrequency > m_maxFrequency) {
         m_maxFrequency = maxFrequency;
     }
-    */
+    
     // Clean up
     fftw_destroy_plan(p);
     fftw_free(out);
@@ -50,32 +50,32 @@ bool SimpleFrequencyProcessor::SignalDetected() const
 
 float SimpleFrequencyProcessor::GetLatestPeak()
 {
-    return m_latestPeak.load();
+    return m_latestFrequency.load();
 }
 
 float SimpleFrequencyProcessor::GetLatestPeakDb()
 {
-    return 20.0f * log10f(m_latestPeak.load());
+    return 20.0f * log10f(m_latestFrequency.load());
 }
 
 float SimpleFrequencyProcessor::GetMinPeak()
 {
-    return m_minPeak.load();
+    return m_minFrequency.load();
 }
 
 float SimpleFrequencyProcessor::GetMinPeakDb()
 {
-    return 20.0f * log10f(m_minPeak.load());
+    return 20.0f * log10f(m_minFrequency.load());
 }
 
 float SimpleFrequencyProcessor::GetMaxPeak()
 {
-    return m_maxPeak.load();
+    return m_maxFrequency.load();
 }
 
 float SimpleFrequencyProcessor::GetMaxPeakDb()
 {
-    return 20.0f * log10f(m_maxPeak.load());
+    return 20.0f * log10f(m_maxFrequency.load());
 }
 
 std::string_view SimpleFrequencyProcessor::GetName()

@@ -18,7 +18,7 @@
 #include <ncurses.h>
 
 #include "JackClient.hpp"
-#include "SimplePeakProcessor.hpp"
+#include "SimpleFrequencyProcessor.hpp"
 
 namespace jackmeter {
 
@@ -51,7 +51,7 @@ OPTIONS
 } // namespace jackmeter
 
 std::shared_ptr<jackmeter::JackClient> client;
-std::vector<std::shared_ptr<jackmeter::SimplePeakProcessor>> processors;
+std::vector<std::shared_ptr<jackmeter::SimpleFrequencyProcessor>> processors;
 bool plain_output = false;
 
 void log_status_plain()
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
         filter.emplace_back(std::string(argv[optind]));
     auto addPorts = [](auto& ports) {
         for (auto& portToListenTo : ports) {
-            auto processor = std::make_shared<jackmeter::SimplePeakProcessor>(portToListenTo);
+            auto processor = std::make_shared<jackmeter::SimpleFrequencyProcessor>(portToListenTo);
             processors.push_back(processor);
             client->AddProbe(portToListenTo, processor);
         }
