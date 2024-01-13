@@ -1,6 +1,10 @@
 project(jackmeter)
 cmake_minimum_required(VERSION 3.14)
 
+# Set the CMP0048 policy to NEW
+cmake_policy(SET CMP0048 NEW)
+project(jackmeter)
+
 set(COMMON_FLAGS
     -Wall
     -Wextra
@@ -39,3 +43,44 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 target_link_libraries(${PROJECT_NAME} ${JACK_LIBRARIES} fmt::fmt ${CURSES_LIBRARY})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+
+#############################################
+# Unit tests
+
+# enable CTest testing
+enable_testing()
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+# Add a testing executable
+add_executable(
+  jackclient_tests 
+  tests/test_SimplePeakProcessor.cpp
+  src/SimplePeakProcessor.cpp
+)
+
+target_link_libraries(
+  jackclient_tests
+  gtest_main
+  gtest
+  # other libraries your tests might need
+)
+
+target_include_directories(jackclient_tests PRIVATE 
+  ${googletest_SOURCE_DIR}/include 
+  ${googletest_SOURCE_DIR}
+  ${googletest_SOURCE_DIR}/googlemock/include
+  ${googletest_SOURCE_DIR}/googlemock
+  include
+)
+
+include(GoogleTest)
+gtest_discover_tests(jackclient_tests)
