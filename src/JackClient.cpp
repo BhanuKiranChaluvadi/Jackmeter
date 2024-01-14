@@ -123,7 +123,8 @@ int JackClient::OnJackProcess(jack_nframes_t nFrames, void* arg)
         for (auto pair : self->m_pairs) {
             auto probePort = pair.first.second;
             auto probeProcessor = pair.second;
-            probeProcessor->Process(static_cast<float*>(jack_port_get_buffer(probePort, nFrames)), nFrames);
+            probeProcessor->Process(static_cast<float*>(jack_port_get_buffer(probePort, nFrames)), nFrames, jack_get_sample_rate(self->m_client));
+
         }
     } catch (const std::exception& ex) {
         fmt::print(stderr, "Caught exception when running audio callback {}", ex.what());

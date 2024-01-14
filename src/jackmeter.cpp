@@ -18,7 +18,7 @@
 #include <ncurses.h>
 
 #include "JackClient.hpp"
-#include "SimplePeakProcessor.hpp"
+#include "SimpleFrequencyProcessor.hpp"
 
 namespace jackmeter {
 
@@ -51,11 +51,12 @@ OPTIONS
 } // namespace jackmeter
 
 std::shared_ptr<jackmeter::JackClient> client;
-std::vector<std::shared_ptr<jackmeter::SimplePeakProcessor>> processors;
+std::vector<std::shared_ptr<jackmeter::SimpleFrequencyProcessor>> processors;
 bool plain_output = false;
 
 void log_status_plain()
 {
+    /*
     time_t rawtime;
     struct tm* ltime;
 
@@ -66,6 +67,7 @@ void log_status_plain()
         printf("%s : %6.1f db  (min:%6.1f, max:%6.1f)\n", std::string((*itr)->GetName()).c_str(), (*itr)->GetLatestPeakDb(), (*itr)->GetMinPeakDb(), (*itr)->GetMaxPeakDb());
     }
     fflush(stdout);
+    */
 }
 
 bool stdin_available()
@@ -141,7 +143,7 @@ int main(int argc, char* argv[])
         filter.emplace_back(std::string(argv[optind]));
     auto addPorts = [](auto& ports) {
         for (auto& portToListenTo : ports) {
-            auto processor = std::make_shared<jackmeter::SimplePeakProcessor>(portToListenTo);
+            auto processor = std::make_shared<jackmeter::SimpleFrequencyProcessor>(portToListenTo);
             processors.push_back(processor);
             client->AddProbe(portToListenTo, processor);
         }
@@ -166,12 +168,79 @@ int main(int argc, char* argv[])
         if (plain_output) {
             log_status_plain();
         } else {
-            if (measurement == 1)
+            if (measurement == 1) {
                 window = initscr();
-            wmove(window, 0, 0);
-            wrefresh(window);
+                if (window == NULL) {
+                    // Handle error if initscr() fails
+                    return 1;
+                }
+                noecho(); // Don't echo any keypresses
+                curs_set(FALSE); // Don't display a cursor
+                wmove(window, 0, 0);
+                wrefresh(window);
+            }
+
+            // Set our spectrogram size in the terminal to 100 characters, and move the
+            // cursor to the beginning of the line
+            int dispSize = 100;
+
             for (auto itr = processors.begin(); itr != processors.end(); ++itr) {
 
+                try {
+                    const jackmeter::StreamData& data = (*itr)->GetSpectroData();
+
+                    for (int i = 0; i < dispSize; i++) {
+                        // Sample frequency data logarithmically
+                        double proportion = std::pow(i / (double)dispSize, 4);
+                        double freq = data.out[(int)(data.startIndex
+                            + proportion * data.spectroSize)];
+
+                        // Display full block characters with heights based on frequency intensity
+                        std::string block;
+                        /*
+                        if (freq < 0.125) {
+                            block = "▁";
+                        } else if (freq < 0.25) {
+                            block = "▂";
+                        } else if (freq < 0.375) {
+                            block = "▃";
+                        } else if (freq < 0.5) {
+                            block = "▄";
+                        } else if (freq < 0.625) {
+                            block = "▅";
+                        } else if (freq < 0.75) {
+                            block = "▆";
+                        } else if (freq < 0.875) {
+                            block = "▇";
+                        } else {
+                            block = "█";
+                        }
+                        */
+                        /**/
+                        if (freq < 0.125) {
+                            block = "-";
+                        } else if (freq < 0.25) {
+                            block = "+";
+                        } else if (freq < 0.375) {
+                            block = "*";
+                        } else if (freq < 0.5) {
+                            block = "/";
+                        } else if (freq < 0.625) {
+                            block = "=";
+                        } else if (freq < 0.75) {
+                            block = "#";
+                        } else if (freq < 0.875) {
+                            block = "%";
+                        } else {
+                            block = "@";
+                        }
+
+                        mvprintw(0, i, "%s", block.c_str());
+                    }
+                    refresh(); // Refresh the screen to show the new characters
+                } catch (const std::runtime_error& e) {
+                    continue;
+                }
             }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds { static_cast<uint32_t>(1000 / rate) });

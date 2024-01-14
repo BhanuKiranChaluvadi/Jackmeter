@@ -33,7 +33,8 @@ pkg_check_modules(FFTW REQUIRED fftw3)
 add_executable(${PROJECT_NAME} 
   src/jackmeter.cpp
   src/JackClient.cpp
-  src/SimplePeakProcessor.cpp)
+  # src/SimplePeakProcessor.cpp
+  src/SimpleFrequencyProcessor.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE 
   include
