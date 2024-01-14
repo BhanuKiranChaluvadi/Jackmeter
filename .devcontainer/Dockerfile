@@ -11,6 +11,7 @@ RUN apt-get update \
         jackd2 \
         libfmt-dev \
         libjack-jackd2-dev \
+        libfftw3-dev \
         libncurses-dev \
         libsndfile-dev \
         locales \
